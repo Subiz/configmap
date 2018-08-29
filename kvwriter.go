@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"strings"
 )
 
@@ -17,7 +16,7 @@ func toBashName(name string) string {
 	return newname.String()
 }
 
-func prepareKv(c Config) string {
+func ExportKv(c Config) string {
 	if c.Type != "kv" {
 		return ""
 	}
@@ -31,21 +30,4 @@ func prepareKv(c Config) string {
 	c.Value = strings.Replace(c.Value, `"`, `\"`, -1)
 	return c.Name + `="` + c.Value + `"
 `
-}
-
-func WriteKv(c Config) error {
-	data := prepareKv(c)
-	if data == "" {
-		return nil
-	}
-
-	f, err := os.OpenFile(c.Path, os.O_APPEND|os.O_WRONLY, 0600)
-	if err != nil {
-		return err
-	}
-	if _, err = f.WriteString(data); err != nil {
-		f.Close()
-		return err
-	}
-	return f.Close()
 }

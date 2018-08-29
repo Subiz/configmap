@@ -1,8 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
-	"os"
 	"testing"
 )
 
@@ -24,7 +22,7 @@ func TestToBashName(t *testing.T) {
 	}
 }
 
-func TestKvWriterPrepare(t *testing.T) {
+func TestKvWriterExport(t *testing.T) {
 	tcs := []struct {
 		name, value, expect string
 	}{{"A", "B", `A="B"
@@ -33,52 +31,19 @@ func TestKvWriterPrepare(t *testing.T) {
 `},
 		{"C2f  ", "C \"", `C2f="C \""
 `},
+		{"44", `1
+2
+3
+4`, `44="1
+2
+3
+4"
+`},
 	}
 	for _, c := range tcs {
-		out := prepareKv(Config{Name: c.name, Value: c.value, Type: "kv"})
+		out := ExportKv(Config{Name: c.name, Value: c.value, Type: "kv"})
 		if out != c.expect {
 			t.Errorf("expect %s, got %s", c.expect, out)
 		}
-	}
-}
-
-func TestKvWrite(t *testing.T) {
-	configs := []Config{
-		{Type: "kv", Name: "A", Value: "B"},
-		{Type: "kv", Name: "C  ", Value: `'Thanh Van "`},
-		{Type: "kv", Name: "44\n5", Value: "Mot\n Hai\n Ba"},
-		{Type: "kv", Name: "", Value: ""},
-		{Type: "kv", Name: "", Value: ""},
-	}
-
-	tmpfile, err := ioutil.TempFile("", "testkvwriter")
-	if err != nil {
-		t.Fatal(err)
-	}
-	filepath:= tmpfile.Name()
-	tmpfile.Close()
-
-	defer os.Remove(tmpfile.Name()) // clean up
-	for _, c := range configs {
-		c.Path = filepath
-		err := WriteKv(c)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	data, err := ioutil.ReadFile(filepath)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	expect := `A="B"
-C="'Thanh Van \""
-445="Mot
- Hai
- Ba"
-`
-	if string(data) != expect {
-		t.Errorf("expect /%s/, got /%s/", expect, string(data))
 	}
 }
