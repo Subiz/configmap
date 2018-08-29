@@ -7,7 +7,7 @@ import (
 )
 
 // Read kv in vault, return nil if not found
-func ReadVault(addr, token string, paths, fields []string) ([][]byte, error) {
+func ReadVault(addr, token string, paths, fields []string) ([]*string, error) {
 	client, err := api.NewClient(&api.Config{Address: addr})
 	if err != nil {
 		return nil, err
@@ -18,7 +18,7 @@ func ReadVault(addr, token string, paths, fields []string) ([][]byte, error) {
 		return nil, fmt.Errorf("paths and fields should have same len, got %d, %d", len(paths), len(fields))
 	}
 
-	data := make([][]byte, len(paths))
+	data := make([]*string, len(paths))
 	errs := make([]error, len(paths))
 	wg := &sync.WaitGroup{}
 	wg.Add(len(paths))
@@ -40,7 +40,7 @@ func ReadVault(addr, token string, paths, fields []string) ([][]byte, error) {
 				errs[i] = fmt.Errorf("secret is not string, got %v", d)
 				return
 			} else {
-				data[i] = []byte(s)
+				data[i] = &s
 			}
 		}(i)
 	}

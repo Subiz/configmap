@@ -15,15 +15,18 @@ func TestReadVault(t *testing.T) {
 	}
 
 	for i, d := range data {
+		if d == nil {
+			continue
+		}
 		switch i {
 		case 0:
-			if string(d) != "hai" {
-				t.Errorf("should be hai, got %s", d)
+			if *d != "hai" {
+				t.Errorf("should be hai, got %s", *d)
 			}
 
 		case 1:
-			if string(d) != "11111" {
-				t.Errorf("should be 11111, got %s", d)
+			if *d != "11111" {
+				t.Errorf("should be 11111, got %s", *d)
 			}
 		default:
 			t.Fatal("should not run this")
