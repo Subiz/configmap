@@ -1,3 +1,13 @@
+# Configmap
+Read configs from vault based on configmap.yaml
+
+# Dev
+```
+go test ./...
+go build
+./configmap
+
+```
 # Usage
 
 configmap.yaml
