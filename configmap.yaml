@@ -1,0 +1,8 @@
+stripe_apikey:
+  secret/stripe/dev(api_key): "222222222223333333333333"
+
+  #- default vaule
+~/workspace/x:
+  "secret/stripe/file(ke)": asdlkfjkalsjdfkljasdklfj
+
+s3_apikey: default value
