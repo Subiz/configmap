@@ -1,0 +1,34 @@
+steps:
+- name: gcr.io/cloud-builders/go
+  entrypoint: sh
+  args:
+  - -c
+  - |
+    mkdir -p /workspace/gopath/src/git.subiz.net
+    ln -s /workspace /workspace/gopath/src/git.subiz.net/configmap
+    cd /workspace/gopath/src/git.subiz.net/configmap
+    go get -d -v ./...
+
+- name: gcr.io/cloud-builders/go
+  entrypoint: sh
+  args:
+  - -c
+  - |
+    cd /workspace/gopath/src/git.subiz.net/configmap
+    go build
+
+- name: gcr.io/cloud-builders/docker
+  entrypoint: sh
+  args:
+  - -c
+  - |
+    cd /workspace/gopath/src/git.subiz.net/configmap
+    docker build -t subiz/configmap:$(cat VERSION) .
+
+- name: gcr.io/cloud-builders/docker
+  entrypoint: sh
+  args:
+  - -c
+  - |
+    docker login -u $_DOCKER_USERNAME -p $_DOCKER_PASSWORD
+    docker push subiz/configmap:$(cat VERSION)
