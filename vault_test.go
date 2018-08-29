@@ -7,7 +7,7 @@ const g_testpath = "secret/test_secret"
 const g_addr = "https://vault.subiz.com"
 
 func TestReadVault(t *testing.T) {
-	data, err := ReadVault(g_addr, g_testtoken,
+	data, err := readVault(g_addr, g_testtoken,
 		[]string{g_testpath, g_testpath},
 		[]string{"mot", "hai"})
 	if err != nil {

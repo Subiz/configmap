@@ -7,7 +7,7 @@ import (
 )
 
 // Read kv in vault, return nil if not found
-func ReadVault(addr, token string, paths, fields []string) ([]*string, error) {
+func readVault(addr, token string, paths, fields []string) ([]*string, error) {
 	client, err := api.NewClient(&api.Config{Address: addr})
 	if err != nil {
 		return nil, err
@@ -27,18 +27,14 @@ func ReadVault(addr, token string, paths, fields []string) ([]*string, error) {
 			defer wg.Done()
 			path, field := paths[i], fields[i]
 			secretValues, err := client.Logical().Read(path)
-			errs[i] = err
-			if secretValues == nil {
+			if err != nil {
+				errs[i] = err
 				return
 			}
 
 			d := secretValues.Data[field]
-			if d == nil {
-				return
-			}
 			if s, b := d.(string); !b {
 				errs[i] = fmt.Errorf("secret is not string, got %v", d)
-				return
 			} else {
 				data[i] = &s
 			}
