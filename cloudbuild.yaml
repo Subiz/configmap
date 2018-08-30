@@ -9,16 +9,16 @@ steps:
   args:
   - -c
   - |
-    pwd
-    echo "tag $TAG_NAME"
-    echo "branch $BRANCH_NAME"
-    echo "short $SHORT_SHA"
-    mkdir -p /workspace/gopath/src/git.subiz.net/$_NAME
-    ln -s /workspace/* /workspace/gopath/src/git.subiz.net/$_NAME/
+    mkdir -p /workspace/gopath/src/git.subiz.net
+    ln -s /workspace /workspace/gopath/src/git.subiz.net/$_NAME
 
 - name: gcr.io/cloud-builders/go
-  args: ["get" ,"-d", "-v", "./..."]
-  dir: gopath/src/git.subiz.net/$_NAME
+  entrypoint: sh
+  args:
+  - -c
+  - |
+    cd /workspace/gopath/src/git.subiz.net/$_NAME
+    go get -d -v ./...
 
 - name: gcr.io/cloud-builders/go
   entrypoint: sh
