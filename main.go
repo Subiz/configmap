@@ -14,6 +14,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "configmap"
 	app.Usage = "configmap"
+	app.Version = "1.0.5"
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -27,7 +28,6 @@ func main() {
 			Usage: "vault token",
 		},
 	}
-	app.Version = "0.0.5"
 	app.Action = run
 	l := log.New(os.Stderr, "", 0)
 	if err := app.Run(os.Args); err != nil {
@@ -83,9 +83,5 @@ func run(c *cli.Context) error {
 
 	out, err := parse(configs, vaultdata)
 	fmt.Println(out)
-
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }

@@ -1,7 +1,6 @@
 substitutions:
-  _VERSION: "2"
+  _VERSION: "1"
   _NAME: configmap
-
 
 steps:
 - name: gcr.io/cloud-builders/docker
