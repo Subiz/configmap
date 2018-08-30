@@ -13,7 +13,7 @@ import (
 func main() {
 	app := cli.NewApp()
 	app.Name = "configmap"
-	app.Usage = ""
+	app.Usage = "configmap"
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -27,7 +27,7 @@ func main() {
 			Usage: "vault token",
 		},
 	}
-
+	app.Version = "0.0.5"
 	app.Action = run
 	l := log.New(os.Stderr, "", 0)
 	if err := app.Run(os.Args); err != nil {
