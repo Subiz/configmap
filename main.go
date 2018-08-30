@@ -46,7 +46,7 @@ func loadConfigMap(name string) ([]Config, error) {
 		return nil, err
 	}
 
-	return ParseConfigMap(obj), nil
+	return ParseConfigMap(obj, os.Environ()), nil
 }
 
 func run(c *cli.Context) error {

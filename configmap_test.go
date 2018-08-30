@@ -2,24 +2,26 @@ package main
 
 import (
 	"encoding/json"
-//	"fmt"
-	"testing"
-	"gopkg.in/yaml.v2"
+	//	"fmt"
 	"bytes"
+	"gopkg.in/yaml.v2"
+	"testing"
 )
 
 func TestExtractPathAndField(t *testing.T) {
-	tcs := []struct{
+	tcs := []struct {
+		envs            []string
 		in, path, field string
-	}{{"secret/stripe(api_dev)", "secret/stripe", "api_dev"},
-		{"secret/stripe(api_dev", "secret/stripe", "api_dev"},
-		{"secret/stripe(api_dev  )", "secret/stripe", "api_dev"},
-		{"  secret/stripe(api_dev  )", "secret/stripe", "api_dev"},
-		{"  secret/stripe((api_dev  )  ", "secret/stripe", "(api_dev"},
+	}{{nil, "secret/stripe(api_dev)", "secret/stripe", "api_dev"},
+		{nil, "secret/stripe(api_dev", "secret/stripe", "api_dev"},
+		{nil, "secret/stripe(api_dev  )", "secret/stripe", "api_dev"},
+		{nil, "  secret/stripe(api_dev  )", "secret/stripe", "api_dev"},
+		{nil, "  secret/stripe((api_dev  )  ", "secret/stripe", "(api_dev"},
+		{[]string{"_env=dev", "_key=4"}, "secret/{env}(2{key})", "secret/dev", "24"},
 	}
 
 	for _, c := range tcs {
-		epath, efield := extractPathAndField(c.in, nil)
+		epath, efield := extractPathAndField(c.in, c.envs)
 		if epath != c.path || efield != c.field {
 			t.Errorf("should be equal, got %s, %s, %s", c.in, epath, efield)
 		}
@@ -28,7 +30,7 @@ func TestExtractPathAndField(t *testing.T) {
 
 func TestParseKey(t *testing.T) {
 	tcs := []struct {
-		obj interface{}
+		obj                interface{}
 		path, field, value string
 	}{{map[interface{}]interface{}{"secret/stripe({dev}_apikey) ": "2222"}, "secret/stripe", "{dev}_apikey", "2222"},
 		{map[interface{}]interface{}{"stripe ke": "123"}, "stripe ke", "", "123"},
@@ -64,25 +66,25 @@ s3_apikey: default value
 
 	configs := ParseConfigMap(obj, nil)
 	expects := []Config{{
-		Name: "stripe_apikey",
-		Path: "",
-		Type: "kv",
-		Value: "222222222223333333333333",
-		VaultPath: "secret/stripe",
+		Name:       "stripe_apikey",
+		Path:       "",
+		Type:       "kv",
+		Value:      "222222222223333333333333",
+		VaultPath:  "secret/stripe",
 		VaultField: "{dev}_apikey",
 	}, {
-		Name: "",
-		Path: "/workspace/x",
-		Type: "file",
-		Value: "asdlkfjkalsjdfkljasdklfj",
-		VaultPath: "stripe ke",
+		Name:       "",
+		Path:       "/workspace/x",
+		Type:       "file",
+		Value:      "asdlkfjkalsjdfkljasdklfj",
+		VaultPath:  "stripe ke",
 		VaultField: "",
 	}, {
-		Name: "s3_apikey",
-		Path: "",
-		Type: "kv",
-		Value: "default value",
-		VaultPath: "",
+		Name:       "s3_apikey",
+		Path:       "",
+		Type:       "kv",
+		Value:      "default value",
+		VaultPath:  "",
 		VaultField: "",
 	}}
 
@@ -118,7 +120,7 @@ func TestGetSubstitution(t *testing.T) {
 	}
 
 	expect := map[string]string{
-		"hv": "haivan",
+		"hv":  "haivan",
 		"h_v": "===",
 	}
 	out := getSubstitions(envs)

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"strings"
+	"github.com/thanhpk/stringf"
 )
 
 type Config struct {
@@ -15,7 +16,26 @@ type Config struct {
 	VaultValue *string
 }
 
-func extractPathAndField(key string) (string, string) {
+func getSubstitions(envs []string) map[string]string {
+	m := make(map[string]string)
+	for _, pair := range envs {// os.Environ() {
+		pairsplit := strings.Split(pair, "=")
+		name := strings.TrimSpace(pairsplit[0])
+		if !strings.HasPrefix(name, "_") {
+			continue
+		}
+		val := ""
+		if len(pairsplit) > 1 {
+			val = strings.Join(pairsplit[1:], "=")
+		}
+		name = strings.ToLower(name[1:])
+		m[name] = val
+	}
+	return m
+}
+
+
+func extractPathAndField(key string, envs []string) (string, string) {
 	arrs := strings.Split(key, "(")
 	if len(arrs) < 2 {
 		return arrs[0], ""
@@ -23,14 +43,16 @@ func extractPathAndField(key string) (string, string) {
 	arrs[1] = strings.Join(arrs[1:], "(")
 	path := strings.TrimSpace(arrs[0])
 	field := strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(arrs[1]), ")"))
+	subs := getSubstitions(envs)
+	path, field = stringf.Format(path, subs), stringf.Format(field, subs)
 	return path, field
 }
 
-func ParseKey(data interface{}) (string, string, string) {
+func ParseKey(data interface{}, envs []string) (string, string, string) {
 	switch data := data.(type) {
 	case map[interface{}]interface{}:
 		for k, v := range data {
-			path, field := extractPathAndField(strings.TrimSpace(toString(k)))
+			path, field := extractPathAndField(strings.TrimSpace(toString(k)), envs)
 			val := strings.TrimSpace(toString(v))
 			return path, field, val
 		}
@@ -40,7 +62,7 @@ func ParseKey(data interface{}) (string, string, string) {
 	}
 }
 
-func ParseConfigMap(obj map[interface{}]interface{}) []Config {
+func ParseConfigMap(obj map[interface{}]interface{}, envs []string) []Config {
 	configs := make([]Config, 0)
 	for k, v := range obj {
 		c := Config{}
@@ -53,7 +75,7 @@ func ParseConfigMap(obj map[interface{}]interface{}) []Config {
 			c.Name = strings.TrimSpace(key)
 		}
 
-		c.VaultPath, c.VaultField, c.Value = ParseKey(v)
+		c.VaultPath, c.VaultField, c.Value = ParseKey(v, envs)
 		configs = append(configs, c)
 	}
 	return configs
