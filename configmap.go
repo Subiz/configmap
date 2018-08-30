@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"strings"
 	"github.com/thanhpk/stringf"
+	"sort"
+	"strings"
 )
 
 type Config struct {
@@ -18,7 +19,7 @@ type Config struct {
 
 func getSubstitions(envs []string) map[string]string {
 	m := make(map[string]string)
-	for _, pair := range envs {// os.Environ() {
+	for _, pair := range envs { // os.Environ() {
 		pairsplit := strings.Split(pair, "=")
 		name := strings.TrimSpace(pairsplit[0])
 		if !strings.HasPrefix(name, "_") {
@@ -33,7 +34,6 @@ func getSubstitions(envs []string) map[string]string {
 	}
 	return m
 }
-
 
 func extractPathAndField(key string, envs []string) (string, string) {
 	arrs := strings.Split(key, "(")
@@ -78,7 +78,25 @@ func ParseConfigMap(obj map[interface{}]interface{}, envs []string) []Config {
 		c.VaultPath, c.VaultField, c.Value = ParseKey(v, envs)
 		configs = append(configs, c)
 	}
+	if 0 == 1 {
+		sort.Sort(ByConfigNameAndPath(configs))
+	}
 	return configs
+}
+
+type ByConfigNameAndPath []Config
+
+func (a ByConfigNameAndPath) Len() int      { return len(a) }
+func (a ByConfigNameAndPath) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+func (a ByConfigNameAndPath) Less(i, j int) bool {
+	if a[i].Name < a[j].Name {
+		return true
+	}
+
+	if a[i].Name == a[j].Name {
+		return a[i].Path < a[j].Path
+	}
+	return false
 }
 
 func parse(configs []Config, vaultvalues []*string) (string, error) {
@@ -90,7 +108,7 @@ func parse(configs []Config, vaultvalues []*string) (string, error) {
 	var err error
 
 	for i, c := range configs {
-		if vaultvalues[i]  != nil {
+		if vaultvalues[i] != nil {
 			c.Value = *vaultvalues[i]
 		}
 

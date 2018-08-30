@@ -1,10 +1,11 @@
 package main
 
 import (
-	"encoding/json"
-	//	"fmt"
+	"sort"
 	"bytes"
+	"encoding/json"
 	"gopkg.in/yaml.v2"
+	"strings"
 	"testing"
 )
 
@@ -47,6 +48,7 @@ func TestParseKey(t *testing.T) {
 
 func TestParseObject(t *testing.T) {
 	var data = `
+---
 # 0
 stripe_apikey:
   secret/stripe({dev}_apikey): "222222222223333333333333"
@@ -57,12 +59,21 @@ stripe_apikey:
 
 # 2
 s3_apikey: default value
+---
+# 3
+version: 1
+---
+# 4
+a:
+  b(c): 4
+
 `
 	obj := make(map[interface{}]interface{})
-	err := yaml.Unmarshal([]byte(data), &obj)
-	if err != nil {
-		t.Fatalf("error: %v", err)
+	dec := yaml.NewDecoder(strings.NewReader(data))
+	for dec.Decode(&obj) == nil {
 	}
+
+	//err := yaml.Unmarshal([]byte(data), &x)
 
 	configs := ParseConfigMap(obj, nil)
 	expects := []Config{{
@@ -80,29 +91,47 @@ s3_apikey: default value
 		VaultPath:  "stripe ke",
 		VaultField: "",
 	}, {
-		Name:       "s3_apikey",
-		Path:       "",
+		Name:  "s3_apikey",
+		Type:  "kv",
+		Value: "default value",
+	}, {
+		Name:  "version",
+		Type:  "kv",
+		Value: "1",
+	}, {
+		Name:       "a",
 		Type:       "kv",
-		Value:      "default value",
-		VaultPath:  "",
-		VaultField: "",
+		Value:      "4",
+		VaultPath:  "b",
+		VaultField: "c",
 	}}
 
 	if len(configs) != len(expects) {
 		t.Fatalf("expect %d keys, got %d keys", len(expects), len(configs))
 	}
 
-	for i := range configs {
-		c, e := configs[i], expects[i]
-		if !compareConfig(c, e) {
-			t.Fatalf("should be equal, expect %v, got %v", jsonify(e), jsonify(c))
-		}
+	if !compareConfigArr(expects, configs) {
+		t.Fatalf("should be equal, expect %v, got %v", jsonify(expects), jsonify(configs))
 	}
+
 }
 
-func jsonify(a Config) string {
+func jsonify(a interface{}) string {
 	ab, _ := json.Marshal(&a)
 	return string(ab)
+}
+
+func compareConfigArr(a, b []Config) bool {
+	sort.Sort(ByConfigNameAndPath(a))
+	sort.Sort(ByConfigNameAndPath(b))
+
+	for i := range a {
+		ai, bi := a[i], b[i]
+		if !compareConfig(ai, bi) {
+			return false
+		}
+	}
+	return true
 }
 
 func compareConfig(a, b Config) bool {
