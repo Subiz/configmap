@@ -31,9 +31,9 @@ func readVault(addr, token string, paths, fields []string) ([]*string, error) {
 				errs[i] = err
 				return
 			}
-			//if secretValues == nil {
-				//return
-			//}
+			if secretValues == nil {
+				return
+			}
 			d := secretValues.Data[field]
 			if s, b := d.(string); !b {
 				errs[i] = fmt.Errorf("secret is not string, got %v", d)

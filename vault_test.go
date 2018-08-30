@@ -8,8 +8,8 @@ const g_addr = "https://vault.subiz.com"
 
 func TestReadVault(t *testing.T) {
 	data, err := readVault(g_addr, g_testtoken,
-		[]string{g_testpath, g_testpath},
-		[]string{"mot", "hai"})
+		[]string{g_testpath, g_testpath, ""},
+		[]string{"mot", "hai", ""})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,6 +27,10 @@ func TestReadVault(t *testing.T) {
 		case 1:
 			if *d != "11111" {
 				t.Errorf("should be 11111, got %s", *d)
+			}
+		case 2:
+			if *d != "" {
+				t.Errorf("should be empty, got %s", *d)
 			}
 		default:
 			t.Fatal("should not run this")
