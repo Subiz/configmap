@@ -65,6 +65,10 @@ func run(c *cli.Context) error {
 		}
 	}
 
+	if token == "" {
+		token = os.Getenv("VAULT_TOKEN")
+	}
+
 	configs, err := loadConfigMap(name)
 	if err != nil {
 		return err
