@@ -61,7 +61,7 @@ func run(c *cli.Context) error {
 	if addr == "" {
 		addr = os.Getenv("VAULT_ADDR")
 		if addr == "" {
-			addr = "http//localhost:8200"
+			addr = "http://localhost:8200"
 		}
 	}
 
