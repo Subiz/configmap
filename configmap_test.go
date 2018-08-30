@@ -19,7 +19,7 @@ func TestExtractPathAndField(t *testing.T) {
 	}
 
 	for _, c := range tcs {
-		epath, efield := extractPathAndField(c.in)
+		epath, efield := extractPathAndField(c.in, nil)
 		if epath != c.path || efield != c.field {
 			t.Errorf("should be equal, got %s, %s, %s", c.in, epath, efield)
 		}
@@ -36,7 +36,7 @@ func TestParseKey(t *testing.T) {
 	}
 
 	for _, c := range tcs {
-		epath, efield, evalue := ParseKey(c.obj)
+		epath, efield, evalue := ParseKey(c.obj, nil)
 		if epath != c.path || efield != c.field || evalue != c.value {
 			t.Fatalf("wrong %v, %s, %s, %s.", c.obj, epath, efield, evalue)
 		}
@@ -62,7 +62,7 @@ s3_apikey: default value
 		t.Fatalf("error: %v", err)
 	}
 
-	configs := ParseConfigMap(obj)
+	configs := ParseConfigMap(obj, nil)
 	expects := []Config{{
 		Name: "stripe_apikey",
 		Path: "",
@@ -107,4 +107,39 @@ func compareConfig(a, b Config) bool {
 	ab, _ := json.Marshal(&a)
 	bb, _ := json.Marshal(&b)
 	return bytes.Compare(ab, bb) == 0
+}
+
+func TestGetSubstitution(t *testing.T) {
+	envs := []string{
+		`A=4`,
+		`B=5`,
+		`_HV=haivan`,
+		`_H_V====`,
+	}
+
+	expect := map[string]string{
+		"hv": "haivan",
+		"h_v": "===",
+	}
+	out := getSubstitions(envs)
+	if !compareMap(expect, out) {
+		t.Errorf("Expect %v, Got %v", expect, out)
+	}
+}
+
+func compareMap(a, b map[string]string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for k, v := range a {
+		vb, f := b[k]
+		if !f {
+			return false
+		}
+		if v != vb {
+			return false
+		}
+	}
+	return true
 }
