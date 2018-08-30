@@ -1,10 +1,10 @@
 package main
 
 import (
-	"sort"
 	"bytes"
 	"encoding/json"
 	"gopkg.in/yaml.v2"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -73,8 +73,6 @@ a:
 	for dec.Decode(&obj) == nil {
 	}
 
-	//err := yaml.Unmarshal([]byte(data), &x)
-
 	configs := ParseConfigMap(obj, nil)
 	expects := []Config{{
 		Name:       "stripe_apikey",
@@ -114,11 +112,6 @@ a:
 		t.Fatalf("should be equal, expect %v, got %v", jsonify(expects), jsonify(configs))
 	}
 
-}
-
-func jsonify(a interface{}) string {
-	ab, _ := json.Marshal(&a)
-	return string(ab)
 }
 
 func compareConfigArr(a, b []Config) bool {
@@ -173,4 +166,9 @@ func compareMap(a, b map[string]string) bool {
 		}
 	}
 	return true
+}
+
+func jsonify(a interface{}) string {
+	ab, _ := json.Marshal(a)
+	return string(ab)
 }

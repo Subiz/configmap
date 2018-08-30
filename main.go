@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/urfave/cli"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -14,7 +13,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "configmap"
 	app.Usage = "configmap"
-	app.Version = "1.0.5"
+	app.Version = "1.0.7"
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -36,14 +35,15 @@ func main() {
 }
 
 func loadConfigMap(name string) ([]Config, error) {
-	data, err := ioutil.ReadFile(name)
+	f, err := os.Open(name)
 	if err != nil {
 		return nil, err
 	}
+	defer f.Close()
 
 	obj := make(map[interface{}]interface{})
-	if err := yaml.Unmarshal([]byte(data), &obj); err != nil {
-		return nil, err
+	dec := yaml.NewDecoder(f)
+	for dec.Decode(&obj) == nil {
 	}
 
 	return ParseConfigMap(obj, os.Environ()), nil
