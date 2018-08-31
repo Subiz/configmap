@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/vault/api"
 	"sync"
+	"strings"
 )
 
 // Read kv in vault, return nil if not found
@@ -25,7 +26,10 @@ func readVault(addr, token string, paths, fields []string) ([]*string, error) {
 	for i := range paths {
 		go func(i int) {
 			defer wg.Done()
-			path, field := paths[i], fields[i]
+			path, field := strings.TrimSpace(paths[i]), strings.TrimSpace(fields[i])
+			if path == "" && field == "" {
+				return
+			}
 			secretValues, err := client.Logical().Read(path)
 			if err != nil {
 				errs[i] = err
