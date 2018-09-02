@@ -15,7 +15,7 @@ func TestWriteFile(t *testing.T) {
 "3`
 	c := Config{Path: dir + "/a", Value: value}
 	cmd := WriteFile(c, "bash")
-	println(cmd)
+
 	_, err := exec.Command("/bin/bash", "-c", cmd).Output()
 	if err != nil {
 		t.Fatal(err)

@@ -10,14 +10,7 @@ import (
 // + toPrintf("hello")    // printf %s "hello"
 // + toPrintf("hel\nlo")  // printf %s\n%s "hel" "lo"
 func toPrintf(content string) string {
-	content = strings.Replace(content, `\`, `\\`, -1)
-	content = strings.Replace(content, `"`, `\"`, -1)
-	content = strings.Replace(content, "\a", `\a`, -1)
-	content = strings.Replace(content, "\b", `\b`, -1)
-	content = strings.Replace(content, "\r", `\r`, -1)
-	content = strings.Replace(content, "\f", `\f`, -1)
-	content = strings.Replace(content, "\t", `\t`, -1)
-	content = strings.Replace(content, "\v", `\v`, -1)
+	content = unescapeString(content)
 
 	line := strings.Split(content, "\n")
 	content = "\"" + strings.Replace(content, "\n", "\" \"", -1) + "\""

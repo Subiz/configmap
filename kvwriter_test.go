@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os/exec"
+	"strings"
 	"testing"
 )
 
@@ -22,54 +24,23 @@ func TestToBashName(t *testing.T) {
 	}
 }
 
-func TestKvWriterExportShell(t *testing.T) {
+func TestKvWriterExport(t *testing.T) {
 	tcs := []struct {
-		name, value, expect string
-	}{{"A", "B", `export A="B"
-`},
-		{"C2f  ", "C ", `export C2f="C "
-`},
-		{"C2f  ", "C \"", `export C2f="C \\""
-`},
-		{"44", `1
-2
-3
-4`, `export 44="1
-2
-3
-4"
-`},
+		name, value string
+	}{{"A", "B"},
+		{"C2f  ", "C "},
+		{"C2f  ", "C \""},
 	}
-	for _, c := range tcs {
-		out := exportKvShell(Config{Name: c.name, Value: c.value, Type: "kv"})
-		if out != c.expect {
-			t.Errorf("expect %s, got %s", c.expect, out)
-		}
-	}
-}
 
-func TestKvWriterExportDocker(t *testing.T) {
-	tcs := []struct {
-		name, value, expect string
-	}{{"A", "B", `ENV A "B"
-`},
-		{"C2f  ", "C ", `ENV C2f "C "
-`},
-		{"C2f  ", "C \"", `ENV C2f "C \\""
-`},
-		{"44", `1
-2
-3
-4`, `ENV 44 "1
-2
-3
-4"
-`},
-	}
 	for _, c := range tcs {
-		out := exportKvDocker(Config{Name: c.name, Value: c.value, Type: "kv"})
-		if out != c.expect {
-			t.Errorf("expect %s, got %s", c.expect, out)
+		command := exportKv("", Config{Name: c.name, Value: c.value, Type: "kv"})
+		op, err := exec.Command("/bin/bash", "-c", command+`printf "%s" "$` + strings.TrimSpace(c.name) + `"`).Output()
+		if err != nil {
+			t.Error(err)
+		}
+
+		if string(op) != c.value {
+			t.Errorf("should be %s., got %v.", c.value, op)
 		}
 	}
 }
