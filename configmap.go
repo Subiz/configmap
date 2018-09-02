@@ -105,23 +105,22 @@ func parse(configs []Config, vaultvalues []*string, format string) (string, erro
 	}
 
 	out := strings.Builder{}
-	var err error
 
 	for i, c := range configs {
 		if vaultvalues[i] != nil {
 			c.Value = *vaultvalues[i]
 		}
-
+		var cmd = ""
 		if c.Type == "kv" {
-			_, err = out.Write([]byte(ExportKv(c, format)))
+			cmd = ExportKv(c, format)
 		} else if c.Type == "file" {
-			err = WriteFile(c)
+			cmd = WriteFile(c, format)
 		} else {
-			err = fmt.Errorf("unknow type %s", c.Type)
+			return "", fmt.Errorf("unknow type %s", c.Type)
 		}
-		if err != nil {
-			break
+		if _, err := out.Write([]byte(cmd)); err != nil {
+			return "", err
 		}
 	}
-	return out.String(), err
+	return out.String(), nil
 }

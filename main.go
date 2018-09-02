@@ -13,7 +13,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "configmap"
 	app.Usage = "configmap"
-	app.Version = "1.0.8"
+	app.Version = "1.0.9"
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -23,13 +23,13 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "addr",
-			Value: "",
-			Usage: "vault address",
+			Value: os.Getenv("VAULT_ADDR"),
+			Usage: "vault address (VAULT_ADDR)",
 		},
 		cli.StringFlag{
 			Name:  "token",
-			Value: "",
-			Usage: "vault token",
+			Value: os.Getenv("VAULT_TOKEN"),
+			Usage: "vault token (VAULT_TOKEN)",
 		},
 	}
 	app.Action = run
@@ -56,24 +56,13 @@ func loadConfigMap(name string) ([]Config, error) {
 
 func run(c *cli.Context) error {
 	if c.NArg() != 1 {
-		return fmt.Errorf("missing file name")
+		return cli.ShowAppHelp(c)
 	}
 	name := c.Args().Get(0)
 
-	// parse parameters
 	format := strings.TrimSpace(c.String("format"))
 	addr := strings.TrimSpace(c.String("addr"))
 	token := strings.TrimSpace(c.String("token"))
-	if addr == "" {
-		addr = os.Getenv("VAULT_ADDR")
-		if addr == "" {
-			addr = "http://localhost:8200"
-		}
-	}
-
-	if token == "" {
-		token = os.Getenv("VAULT_TOKEN")
-	}
 
 	configs, err := loadConfigMap(name)
 	if err != nil {
