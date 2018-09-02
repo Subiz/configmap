@@ -1,16 +1,23 @@
 package main
 
 import (
-	"testing"
-	"os"
 	"io/ioutil"
+	"os"
+	"os/exec"
+	"testing"
 )
 
 func TestWriteFile(t *testing.T) {
 	dir := "/tmp/a342341XXH/V2108"
 	os.Remove(dir)
-	c := Config{Path: dir + "/a", Value: "123"}
-	if err := WriteFile(c); err != nil {
+	value := `1
+2\a\n
+"3`
+	c := Config{Path: dir + "/a", Value: value}
+	cmd := WriteFile(c, "bash")
+	println(cmd)
+	_, err := exec.Command("/bin/bash", "-c", cmd).Output()
+	if err != nil {
 		t.Fatal(err)
 	}
 
@@ -19,14 +26,25 @@ func TestWriteFile(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if string(data) != "123" {
-		t.Fatalf("should be 123, got %s", data)
+	if string(data) != value {
+		t.Fatalf("got %s", data)
+	}
+}
+
+func TestToPrintf(t *testing.T) {
+	tcs := []struct {
+		content, expect string
+	}{
+		{"hello", `printf "%s" "hello"`},
+		{"hello1\a1\nx", `printf "%s\n%s" "hello1\a1" "x"`},
+		{"hello1\a1\n", `printf "%s\n%s" "hello1\a1" ""`},
+		{"hell\"o", `printf "%s" "hell\"o"`},
 	}
 
-	// write to exist file should cause error
-	c = Config{Path: dir, Value: "321"}
-	err = WriteFile(c)
-	if err == nil {
-		t.Fatal("should be err, got nil")
+	for _, c := range tcs {
+		out := toPrintf(c.content)
+		if out != c.expect {
+			t.Errorf("expect %s, got %s.", c.expect, out)
+		}
 	}
 }
