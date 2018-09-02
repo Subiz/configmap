@@ -17,6 +17,11 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
+			Name: "format",
+			Value: "docker",
+			Usage: "output format, can be bash, docker",
+		},
+		cli.StringFlag{
 			Name:  "addr",
 			Value: "",
 			Usage: "vault address",
@@ -56,6 +61,7 @@ func run(c *cli.Context) error {
 	name := c.Args().Get(0)
 
 	// parse parameters
+	format := strings.TrimSpace(c.String("format"))
 	addr := strings.TrimSpace(c.String("addr"))
 	token := strings.TrimSpace(c.String("token"))
 	if addr == "" {
@@ -85,7 +91,7 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	out, err := parse(configs, vaultdata)
+	out, err := parse(configs, vaultdata, format)
 	fmt.Println(out)
 	return err
 }

@@ -99,7 +99,7 @@ func (a ByConfigNameAndPath) Less(i, j int) bool {
 	return false
 }
 
-func parse(configs []Config, vaultvalues []*string) (string, error) {
+func parse(configs []Config, vaultvalues []*string, format string) (string, error) {
 	if len(configs) != len(vaultvalues) {
 		return "", fmt.Errorf("len configs and len vaultvalues not match, got %d, %d", len(configs), len(vaultvalues))
 	}
@@ -113,7 +113,7 @@ func parse(configs []Config, vaultvalues []*string) (string, error) {
 		}
 
 		if c.Type == "kv" {
-			_, err = out.Write([]byte(ExportKv(c)))
+			_, err = out.Write([]byte(ExportKv(c, format)))
 		} else if c.Type == "file" {
 			err = WriteFile(c)
 		} else {
