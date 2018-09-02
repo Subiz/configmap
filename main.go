@@ -13,7 +13,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "configmap"
 	app.Usage = "configmap"
-	app.Version = "1.0.9"
+	app.Version = "1.0.10"
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
