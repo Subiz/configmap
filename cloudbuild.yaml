@@ -1,5 +1,5 @@
 substitutions:
-  _VERSION: "1"
+  _VERSION: "2"
   _NAME: configmap
 
 steps:
@@ -25,7 +25,7 @@ steps:
   - -c
   - |
     cd /workspace/gopath/src/git.subiz.net/$_NAME
-    CGO_ENABLED=0 go build
+    CGO_ENABLED=0 go build -ldflags="-s -w"
 
 - name: gcr.io/cloud-builders/docker
   entrypoint: sh
