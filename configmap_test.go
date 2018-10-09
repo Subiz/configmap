@@ -79,15 +79,15 @@ a:
 		Path:       "",
 		Type:       "kv",
 		Value:      "222222222223333333333333",
-		VaultPath:  "secret/stripe",
-		VaultField: "{dev}_apikey",
+		ConfigPath:  "secret/stripe",
+		ConfigField: "{dev}_apikey",
 	}, {
 		Name:       "",
 		Path:       "/workspace/x",
 		Type:       "file",
 		Value:      "asdlkfjkalsjdfkljasdklfj",
-		VaultPath:  "stripe ke",
-		VaultField: "",
+		ConfigPath:  "stripe ke",
+		ConfigField: "",
 	}, {
 		Name:  "s3_apikey",
 		Type:  "kv",
@@ -100,8 +100,8 @@ a:
 		Name:       "a",
 		Type:       "kv",
 		Value:      "4",
-		VaultPath:  "b",
-		VaultField: "c",
+		ConfigPath:  "b",
+		ConfigField: "c",
 	}}
 
 	if len(configs) != len(expects) {

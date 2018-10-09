@@ -8,13 +8,13 @@ import (
 )
 
 type Config struct {
-	Name       string
-	Path       string
-	Type       string // file, kv
-	Value      string
-	VaultPath  string
-	VaultField string
-	VaultValue *string
+	Name         string
+	Path         string
+	Type         string // file, kv
+	DefaultValue *string
+	ConfigPath   string
+	ConfigField  string
+	Value        string
 }
 
 func getSubstitions(envs []string) map[string]string {
@@ -75,7 +75,7 @@ func ParseConfigMap(obj map[interface{}]interface{}, envs []string) []Config {
 			c.Name = strings.TrimSpace(key)
 		}
 
-		c.VaultPath, c.VaultField, c.Value = ParseKey(v, envs)
+		c.ConfigPath, c.ConfigField, c.Value = ParseKey(v, envs)
 		configs = append(configs, c)
 	}
 	if 0 == 1 {

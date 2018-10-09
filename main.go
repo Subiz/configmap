@@ -17,6 +17,10 @@ func main() {
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
+			Name: "config-file",
+			Usage: "take input as config file",
+		},
+		cli.StringFlag{
 			Name: "format",
 			Value: "docker",
 			Usage: "output format, can be bash, docker",
@@ -61,7 +65,6 @@ func run(c *cli.Context) error {
 	name := c.Args().Get(0)
 
 	format := strings.TrimSpace(c.String("format"))
-	addr := strings.TrimSpace(c.String("addr"))
 	token := strings.TrimSpace(c.String("token"))
 
 	configs, err := loadConfigMap(name)
@@ -71,16 +74,23 @@ func run(c *cli.Context) error {
 
 	paths, fields := make([]string, 0), make([]string, 0)
 	for _, c := range configs {
-		paths = append(paths, c.VaultPath)
-		fields = append(fields, c.VaultField)
+		paths = append(paths, c.ConfigPath)
+		fields = append(fields, c.ConfigField)
 	}
 
-	vaultdata, err := readVault(addr, token, paths, fields)
+	configpath := strings.TrimSpace(c.String("config-file"))
+	var data []*string
+	if configpath != "" {
+		data, err = readFile(configpath, paths, fields)
+	} else {
+		addr := strings.TrimSpace(c.String("addr"))
+		data, err = readVault(addr, token, paths, fields)
+	}
 	if err != nil {
 		return err
 	}
 
-	out, err := parse(configs, vaultdata, format)
+	out, err := parse(configs, data, format)
 	fmt.Println(out)
 	return err
 }
