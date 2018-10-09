@@ -25,16 +25,6 @@ func main() {
 			Value: "docker",
 			Usage: "output format, can be bash, docker",
 		},
-		cli.StringFlag{
-			Name:  "addr",
-			Value: os.Getenv("VAULT_ADDR"),
-			Usage: "vault address (VAULT_ADDR)",
-		},
-		cli.StringFlag{
-			Name:  "token",
-			Value: os.Getenv("VAULT_TOKEN"),
-			Usage: "vault token (VAULT_TOKEN)",
-		},
 	}
 	app.Action = run
 	l := log.New(os.Stderr, "", 0)
@@ -65,7 +55,6 @@ func run(c *cli.Context) error {
 	name := c.Args().Get(0)
 
 	format := strings.TrimSpace(c.String("format"))
-	token := strings.TrimSpace(c.String("token"))
 
 	configs, err := loadConfigMap(name)
 	if err != nil {
@@ -79,13 +68,8 @@ func run(c *cli.Context) error {
 	}
 
 	configpath := strings.TrimSpace(c.String("config-file"))
-	var data []*string
-	if configpath != "" {
-		data, err = readFile(configpath, paths, fields)
-	} else {
-		addr := strings.TrimSpace(c.String("addr"))
-		data, err = readVault(addr, token, paths, fields)
-	}
+	data, err := readFile(configpath, paths, fields)
+
 	if err != nil {
 		return err
 	}
