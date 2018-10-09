@@ -1,0 +1,5 @@
+stripekey:
+  stripe(apikey): 123
+
+/tmp/testconfigmap:
+  s2(password): "dddddddddddd"

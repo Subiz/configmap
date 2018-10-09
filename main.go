@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/urfave/cli"
 	"gopkg.in/yaml.v2"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -13,15 +14,15 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "configmap"
 	app.Usage = "configmap"
-	app.Version = "1.0.10"
+	app.Version = "1.0.11"
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name: "config-file",
+			Name:  "config",
 			Usage: "take input as config file",
 		},
 		cli.StringFlag{
-			Name: "format",
+			Name:  "format",
 			Value: "docker",
 			Usage: "output format, can be bash, docker",
 		},
@@ -42,7 +43,17 @@ func loadConfigMap(name string) ([]Config, error) {
 
 	obj := make(map[interface{}]interface{})
 	dec := yaml.NewDecoder(f)
-	for dec.Decode(&obj) == nil {
+	for {
+		err := dec.Decode(&obj)
+		if err == nil {
+			continue
+		}
+
+		if err == io.EOF {
+			break
+		}
+
+		return nil, err
 	}
 
 	return ParseConfigMap(obj, os.Environ()), nil
