@@ -52,7 +52,6 @@ func loadConfigMap(name string) ([]Config, error) {
 		if err == io.EOF {
 			break
 		}
-
 		return nil, err
 	}
 
@@ -78,7 +77,7 @@ func run(c *cli.Context) error {
 		fields = append(fields, c.ConfigField)
 	}
 
-	configpath := strings.TrimSpace(c.String("config-file"))
+	configpath := strings.TrimSpace(c.String("config"))
 	data, err := readFile(configpath, paths, fields)
 
 	if err != nil {

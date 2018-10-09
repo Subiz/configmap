@@ -13,12 +13,12 @@ func TestExtractPathAndField(t *testing.T) {
 	tcs := []struct {
 		envs            []string
 		in, path, field string
-	}{{nil, "secret/stripe(api_dev)", "secret/stripe", "api_dev"},
-		{nil, "secret/stripe(api_dev", "secret/stripe", "api_dev"},
-		{nil, "secret/stripe(api_dev  )", "secret/stripe", "api_dev"},
-		{nil, "  secret/stripe(api_dev  )", "secret/stripe", "api_dev"},
-		{nil, "  secret/stripe((api_dev  )  ", "secret/stripe", "(api_dev"},
-		{[]string{"_env=dev", "_key=4"}, "secret/{env}(2{key})", "secret/dev", "24"},
+	}{{nil, "secret/stripe.api_dev", "secret/stripe", "api_dev"},
+		{nil, "secret/stripe.api_dev", "secret/stripe", "api_dev"},
+		{nil, "secret/stripe.api_dev .", "secret/stripe", "api_dev"},
+		{nil, "  secret/stripe.api_dev  .", "secret/stripe", "api_dev"},
+		{nil, "  secret/stripe.api_dev    ", "secret/stripe", "api_dev"},
+		{[]string{"_env=dev", "_key=4"}, "secret/{env}.2{key}", "secret/dev", "24"},
 	}
 
 	for _, c := range tcs {
@@ -29,43 +29,23 @@ func TestExtractPathAndField(t *testing.T) {
 	}
 }
 
-func TestParseKey(t *testing.T) {
-	tcs := []struct {
-		obj                interface{}
-		path, field, value string
-	}{{map[interface{}]interface{}{"secret/stripe({dev}_apikey) ": "2222"}, "secret/stripe", "{dev}_apikey", "2222"},
-		{map[interface{}]interface{}{"stripe ke": "123"}, "stripe ke", "", "123"},
-		{"default value ", "", "", "default value "},
-	}
-
-	for _, c := range tcs {
-		epath, efield, evalue := ParseKey(c.obj, nil)
-		if epath != c.path || efield != c.field || evalue != c.value {
-			t.Fatalf("wrong %v, %s, %s, %s.", c.obj, epath, efield, evalue)
-		}
-	}
-}
-
 func TestParseObject(t *testing.T) {
 	var data = `
 ---
 # 0
-stripe_apikey:
-  secret/stripe({dev}_apikey): "222222222223333333333333"
+stripe_apikey: secret/stripe.{dev}_apikey
 
 # 1 - default vaule
-/workspace/x:
-  "stripe ke": asdlkfjkalsjdfkljasdklfj
+/workspace/x: stripe.ke
 
 # 2
-s3_apikey: default value
+s3_apikey:
 ---
 # 3
 version: 1
 ---
 # 4
-a:
-  b(c): 4
+a: b.c
 
 `
 	obj := make(map[interface{}]interface{})
@@ -75,31 +55,32 @@ a:
 
 	configs := ParseConfigMap(obj, nil)
 	expects := []Config{{
-		Name:       "stripe_apikey",
-		Path:       "",
-		Type:       "kv",
-		Value:      "222222222223333333333333",
+		Name:        "stripe_apikey",
+		Path:        "",
+		Type:        "kv",
+		Value:       "",
 		ConfigPath:  "secret/stripe",
 		ConfigField: "{dev}_apikey",
 	}, {
-		Name:       "",
-		Path:       "/workspace/x",
-		Type:       "file",
-		Value:      "asdlkfjkalsjdfkljasdklfj",
-		ConfigPath:  "stripe ke",
-		ConfigField: "",
+		Name:        "",
+		Path:        "/workspace/x",
+		Type:        "file",
+		Value:       "",
+		ConfigPath:  "stripe",
+		ConfigField: "ke",
 	}, {
 		Name:  "s3_apikey",
 		Type:  "kv",
-		Value: "default value",
+		Value: "",
 	}, {
 		Name:  "version",
 		Type:  "kv",
-		Value: "1",
+		Value: "",
+		ConfigPath: "1",
 	}, {
-		Name:       "a",
-		Type:       "kv",
-		Value:      "4",
+		Name:        "a",
+		Type:        "kv",
+		Value:       "",
 		ConfigPath:  "b",
 		ConfigField: "c",
 	}}
@@ -111,7 +92,6 @@ a:
 	if !compareConfigArr(expects, configs) {
 		t.Fatalf("should be equal, expect %v, got %v", jsonify(expects), jsonify(configs))
 	}
-
 }
 
 func compareConfigArr(a, b []Config) bool {
@@ -147,7 +127,7 @@ func TestGetSubstitution(t *testing.T) {
 	}
 	out := getSubstitions(envs)
 	if !compareMap(expect, out) {
-		t.Errorf("Expect %v, Got %v", expect, out)
+		t.Errorf("expect %v, got %v", expect, out)
 	}
 }
 

@@ -8,13 +8,12 @@ import (
 )
 
 type Config struct {
-	Name         string
-	Path         string
-	Type         string // file, kv
-	DefaultValue *string
-	ConfigPath   string
-	ConfigField  string
-	Value        string
+	Name        string
+	Path        string
+	Type        string // file, kv
+	Value       string
+	ConfigPath  string
+	ConfigField string
 }
 
 func getSubstitions(envs []string) map[string]string {
@@ -36,30 +35,15 @@ func getSubstitions(envs []string) map[string]string {
 }
 
 func extractPathAndField(key string, envs []string) (string, string) {
-	arrs := strings.Split(key, "(")
+	arrs := strings.Split(key, ".")
 	if len(arrs) < 2 {
 		return arrs[0], ""
 	}
-	arrs[1] = strings.Join(arrs[1:], "(")
 	path := strings.TrimSpace(arrs[0])
-	field := strings.TrimSpace(strings.TrimSuffix(strings.TrimSpace(arrs[1]), ")"))
+	field := strings.TrimSpace(arrs[1])
 	subs := getSubstitions(envs)
 	path, field = stringf.Format(path, subs), stringf.Format(field, subs)
 	return path, field
-}
-
-func ParseKey(data interface{}, envs []string) (string, string, string) {
-	switch data := data.(type) {
-	case map[interface{}]interface{}:
-		for k, v := range data {
-			path, field := extractPathAndField(strings.TrimSpace(toString(k)), envs)
-			val := strings.TrimSpace(toString(v))
-			return path, field, val
-		}
-		return "", "", ""
-	default:
-		return "", "", toString(data)
-	}
 }
 
 func ParseConfigMap(obj map[interface{}]interface{}, envs []string) []Config {
@@ -75,7 +59,7 @@ func ParseConfigMap(obj map[interface{}]interface{}, envs []string) []Config {
 			c.Name = strings.TrimSpace(key)
 		}
 
-		c.ConfigPath, c.ConfigField, c.Value = ParseKey(v, envs)
+		c.ConfigPath, c.ConfigField = extractPathAndField(toString(v), envs)
 		configs = append(configs, c)
 	}
 	if 0 == 1 {
@@ -99,16 +83,15 @@ func (a ByConfigNameAndPath) Less(i, j int) bool {
 	return false
 }
 
-func parse(configs []Config, vaultvalues []*string, format string) (string, error) {
-	if len(configs) != len(vaultvalues) {
-		return "", fmt.Errorf("len configs and len vaultvalues not match, got %d, %d", len(configs), len(vaultvalues))
+func parse(configs []Config, values []*string, format string) (string, error) {
+	if len(configs) != len(values) {
+		return "", fmt.Errorf("len configs and len vaultvalues not match, got %d, %d", len(configs), len(values))
 	}
 
 	out := strings.Builder{}
-
 	for i, c := range configs {
-		if vaultvalues[i] != nil {
-			c.Value = *vaultvalues[i]
+		if values[i] != nil {
+			c.Value = *values[i]
 		}
 		var cmd = ""
 		if c.Type == "kv" {
