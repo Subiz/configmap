@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 )
 
@@ -21,16 +20,7 @@ func readFile(filepath string, paths, keys []string) ([]*string, error) {
 	data := make([]*string, len(keys))
 	for i, k := range keys {
 		path, _ := m[paths[i]].(map[string]interface{})
-		if path == nil {
-			data[i] = nil
-			continue
-		}
-		if field, ok := path[k]; ok {
-			sf := fmt.Sprintf("%s", field)
-			data[i] = &sf
-		} else {
-			data[i] = nil
-		}
+		data[i] = toPString(path[k])
 	}
 	return data, err
 }

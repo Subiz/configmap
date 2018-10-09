@@ -43,6 +43,13 @@ func TestFile(t *testing.T) {
 		[]string{"apikey"},
 		[]*string{},
 		fmt.Errorf("invalid character '}' looking for beginning of object key string"),
+	}, {
+		"number",
+		"./test/config1.json",
+		[]string{"s2"},
+		[]string{"password"},
+		[]*string{ps("2")},
+		nil,
 	}}
 
 	for _, tc := range tcs {
