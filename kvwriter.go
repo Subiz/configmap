@@ -29,23 +29,26 @@ func unescapeString(content string) string {
 	return content
 }
 
-func exportKv(prefix string, c Config) string {
+func exportKv(c Config) string {
 	c.Name = toBashName(c.Name)
 	if c.Name == "" {
 		return ""
 	}
 	c.Value = unescapeString(c.Value)
-	return fmt.Sprintf(`%s %s="%s"
-`, prefix, c.Name, c.Value)
+	return fmt.Sprintf(`%s="%s"`, c.Name, c.Value)
 }
 
-func ExportKv(c Config, format string) string {
+func ExportKv(last string, c Config, format string) string {
 	if c.Type != "kv" {
 		return ""
 	}
-	if format == "docker" {
-		return exportKv("ENV", c)
-	} else {
-		return exportKv("export", c)
+
+	if last == "" {
+		if format == "docker" {
+			last = "ENV"
+		} else {
+			last = "export"
+		}
 	}
+	return last + " " + exportKv(c)
 }

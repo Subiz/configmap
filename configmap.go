@@ -83,27 +83,36 @@ func (a ByConfigNameAndPath) Less(i, j int) bool {
 	return false
 }
 
-func parse(configs []Config, values []*string, format string) (string, error) {
+// TODO: test this function
+func parse(configs []Config, values []*string, format string, compact bool) (string, error) {
 	if len(configs) != len(values) {
 		return "", fmt.Errorf("len configs and len vaultvalues not match, got %d, %d", len(configs), len(values))
 	}
 
 	out := strings.Builder{}
+	var cmdkv = ""
 	for i, c := range configs {
 		if values[i] != nil {
 			c.Value = *values[i]
 		}
-		var cmd = ""
 		if c.Type == "kv" {
-			cmd = ExportKv(c, format)
+			if compact {
+				cmdkv = ExportKv(cmdkv, c, format)
+			} else {
+				cmdkv += ExportKv("", c, format) + "\n"
+			}
 		} else if c.Type == "file" {
-			cmd = WriteFile(c, format)
+			cmd := WriteFile(c, format)
+			if _, err := out.Write([]byte(cmd)); err != nil {
+				return "", err
+			}
 		} else {
 			return "", fmt.Errorf("unknow type %s", c.Type)
 		}
-		if _, err := out.Write([]byte(cmd)); err != nil {
-			return "", err
-		}
 	}
-	return out.String(), nil
+
+	if _, err := out.Write([]byte(cmdkv)); err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(out.String()), nil
 }

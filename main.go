@@ -14,7 +14,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "configmap"
 	app.Usage = "configmap"
-	app.Version = "1.0.12"
+	app.Version = "1.0.13"
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -25,6 +25,11 @@ func main() {
 			Name:  "format",
 			Value: "docker",
 			Usage: "output format, can be bash, docker",
+		},
+		cli.BoolFlag{
+			Name:  "compact",
+			Hidden: true,
+			Usage: "use compact format",
 		},
 	}
 	app.Action = run
@@ -65,7 +70,7 @@ func run(c *cli.Context) error {
 	name := c.Args().Get(0)
 
 	format := strings.TrimSpace(c.String("format"))
-
+	compact := c.Bool("compact")
 	configs, err := loadConfigMap(name)
 	if err != nil {
 		return err
@@ -84,7 +89,7 @@ func run(c *cli.Context) error {
 		return err
 	}
 
-	out, err := parse(configs, data, format)
+	out, err := parse(configs, data, format, compact)
 	fmt.Println(out)
 	return err
 }

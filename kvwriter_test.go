@@ -33,8 +33,8 @@ func TestKvWriterExport(t *testing.T) {
 	}
 
 	for _, c := range tcs {
-		command := exportKv("", Config{Name: c.name, Value: c.value, Type: "kv"})
-		op, err := exec.Command("/bin/bash", "-c", command+`printf "%s" "$` + strings.TrimSpace(c.name) + `"`).Output()
+		command := exportKv(Config{Name: c.name, Value: c.value, Type: "kv"})
+		op, err := exec.Command("/bin/bash", "-c", "export "+command+"\n"+`printf "%s" "$`+strings.TrimSpace(c.name)+`"`).Output()
 		if err != nil {
 			t.Error(err)
 		}

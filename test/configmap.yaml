@@ -1,5 +1,7 @@
 
 stripekey: stripe.apikey
+stripekey2: stripe.apikey
+stripekey3: stripe.apikey
 /tmp/testconfigmap: s2.password
 
 # configmap -config config1.yaml -format bash configmap.yaml
