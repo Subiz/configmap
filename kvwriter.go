@@ -26,7 +26,12 @@ func unescapeString(content string) string {
 	content = strings.Replace(content, "\f", `\f`, -1)
 	content = strings.Replace(content, "\t", `\t`, -1)
 	content = strings.Replace(content, "\v", `\v`, -1)
+	content = strings.Replace(content, `$`, `\$`, -1)
 	return content
+}
+
+func escapeString(content string) string {
+	return strings.Replace(content, `'`, `\'`, -1)
 }
 
 func exportKv(c Config) string {

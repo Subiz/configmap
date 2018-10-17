@@ -40,7 +40,7 @@ func TestKvWriterExport(t *testing.T) {
 		}
 
 		if string(op) != c.value {
-			t.Errorf("should be %s., got %v.", c.value, op)
+			t.Errorf("should be %s., got %s.", c.value, string(op))
 		}
 	}
 }
